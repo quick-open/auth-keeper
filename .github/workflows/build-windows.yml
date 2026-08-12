@@ -20,8 +20,10 @@ jobs:
           pyinstaller --onefile --windowed --name AuthKeeper
           --icon auth-keeper.ico
           --version-file packaging/version.txt
+          --hidden-import authkeeper.__main__
           --add-data "auth-keeper.ico;."
           --collect-all cryptography
+          --collect-all customtkinter
           --collect-submodules PIL
           auth_keeper_app.py
       - name: Stage installer inputs
@@ -42,4 +44,10 @@ jobs:
           path: |
             dist/AuthKeeper.exe
             packaging/dist/AuthKeeper-Setup.exe
+          if-no-files-found: error
+      - name: Upload staging (for signed repack)
+        uses: actions/upload-artifact@v4
+        with:
+          name: auth-keeper-staging
+          path: packaging/staging
           if-no-files-found: error

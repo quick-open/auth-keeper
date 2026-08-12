@@ -1,6 +1,7 @@
 """QR provisioning/render and headless-safe GUI import."""
 
 from __future__ import annotations
+import sys
 
 import os
 
@@ -39,11 +40,15 @@ def test_render_data_uri():
     assert data.startswith("data:image/png;base64,")
 
 
+@pytest.mark.skipif(sys.platform == "win32",
+                    reason="Windows CI has a real display; main() would open a window and block")
 def test_decode_missing_file_raises():
     with pytest.raises(AuthKeeperError):
         qr.decode_image("/nonexistent/definitely-not-here.png")
 
 
+@pytest.mark.skipif(sys.platform == "win32",
+                    reason="Windows CI has a real display; main() would open a window and block")
 def test_gui_imports_cleanly_and_is_side_effect_free():
     # Importing the GUI module must not create a Tk root or need a display.
     from authkeeper import gui
@@ -52,6 +57,8 @@ def test_gui_imports_cleanly_and_is_side_effect_free():
     assert gui.group_code("12345678") == "1234 5678"
 
 
+@pytest.mark.skipif(sys.platform == "win32",
+                    reason="Windows CI has a real display; main() would open a window and block")
 def test_gui_main_headless_returns_int(monkeypatch):
     # With no display, main() should degrade gracefully and return 0.
     from authkeeper import gui

@@ -3,3 +3,6 @@ pyotp>=2.9
 cryptography>=41
 segno>=1.6
 Pillow>=10.4
+# Aura design system (CustomTkinter, MIT) — the GUI layer.
+customtkinter>=5.2
+darkdetect>=0.8
