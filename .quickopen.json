@@ -4,10 +4,11 @@
   "tagline": "A 2FA/TOTP authenticator with an encrypted vault, QR enroll and backup.",
   "categorySlug": "auth-identity",
   "license": "Apache-2.0",
-  "description": "Store and generate TOTP/HOTP two-factor codes in a password-encrypted local vault. Enroll accounts by pasting an otpauth URI or scanning a QR image, see live rotating codes, and export/import an encrypted backup. Your secrets never leave the device \u2014 a desktop authenticator that you actually own.",
+  "description": "Store and generate TOTP/HOTP two-factor codes in a password-encrypted local vault. Enroll accounts by pasting an otpauth URI or scanning a QR image, see live rotating codes, and export/import an encrypted backup. Your secrets never leave the device — a desktop authenticator that you actually own.",
   "aiStack": "Python (tkinter + CLI), pyotp, cryptography, segno, Pillow",
   "platforms": [
-    "windows"
+    "windows",
+    "linux"
   ],
   "buildEntry": "auth_keeper_app.py"
 }
