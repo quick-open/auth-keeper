@@ -1,0 +1,5 @@
+# AuthKeeper runtime deps — permissive/weak-copyleft only, no AGPL/proprietary.
+pyotp>=2.9
+cryptography>=41
+segno>=1.6
+Pillow>=10.4
