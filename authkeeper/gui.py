@@ -41,12 +41,12 @@ import threading
 # box) never fails.
 
 APP_NAME = "AuthKeeper"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 WINDOW_TITLE = "AuthKeeper — by QuickOpen (quickopen.ai)"
 PROJECT_URL = "https://quickopen.ai"
 # publish/specs/auth-keeper.json icon accent is near-black (#0f1115); the Aura
 # UI-accent registry overrides it to this amber so buttons/pills/codes read.
-ACCENT = "#e0a63a"
+ACCENT = "#5b86f7"      # Aura brand accent (legacy amber retired)
 
 VAULT_TYPES = [("AuthKeeper vault", "*.akv *.vault *.json"), ("All files", "*.*")]
 IMAGE_TYPES = [
@@ -190,13 +190,20 @@ def build_app():
         def _build_menu(self):
             bar = tk.Menu(self)
             filem = tk.Menu(bar, tearoff=0)
+            filem.add_command(label="Add account…", accelerator="Ctrl+N",
+                              command=self._menu_add_account)
             filem.add_command(label="Open vault…", command=self._menu_open_vault)
-            filem.add_command(label="Lock vault", command=self.lock)
+            filem.add_command(label="Lock vault", accelerator="Ctrl+L",
+                              command=self.lock)
             filem.add_separator()
+            filem.add_command(label="Settings…", accelerator="Ctrl+,",
+                              command=self._open_settings)
             filem.add_command(label="Exit", command=self._on_close)
             bar.add_cascade(label="File", menu=filem)
 
             viewm = tk.Menu(bar, tearoff=0)
+            viewm.add_command(label="Toggle sidebar", accelerator="Ctrl+\\",
+                              command=self.toggle_sidebar)
             viewm.add_command(
                 label="Toggle dark mode",
                 command=lambda: self.set_theme(
@@ -209,6 +216,63 @@ def build_app():
                               command=lambda: open_with_default_app(PROJECT_URL))
             bar.add_cascade(label="Help", menu=helpm)
             self.configure(menu=bar)
+
+            self.bind_all("<Control-n>",
+                          lambda e: (self._menu_add_account(), "break")[1])
+            self.bind_all("<Control-l>",
+                          lambda e: (self.lock(), "break")[1])
+            self.bind_all("<Control-f>",
+                          lambda e: (self._focus_search(), "break")[1])
+            self.bind_all("<Control-comma>",
+                          lambda e: (self._open_settings(), "break")[1])
+
+        def _menu_add_account(self):
+            if self._vault is None:
+                self.set_status("Unlock the vault first")
+                return
+            self.show("vault")
+            self._add_dialog()
+
+        def _focus_search(self):
+            try:
+                self.show("vault")
+                self._search_entry.focus_set()
+            except Exception:
+                pass
+
+        # ---- Settings dialog (Ctrl+,)
+        def _open_settings(self):
+            dlg = aura.Dialog(self, title="Settings", size=(460, 240))
+            aura.SectionLabel(dlg.body, "Appearance").pack(anchor="w",
+                                                           pady=(0, 2))
+            trow = ctk.CTkFrame(dlg.body, fg_color="transparent")
+            trow.pack(anchor="w", pady=(4, 0))
+            aura.Caption(trow, "Theme").pack(side="left", padx=(0, 10))
+            cur = guiconfig.get_theme()
+            th = aura.AuraOption(trow, values=["System", "Light", "Dark"],
+                                 width=110, height=30,
+                                 command=self._set_theme_pref)
+            th.set(cur.capitalize() if cur in ("light", "dark") else "System")
+            th.pack(side="left")
+            aura.Caption(dlg.body,
+                         "System follows the OS Aura Dark/Light live.").pack(
+                anchor="w", pady=(6, 0))
+            aura.Caption(dlg.body,
+                         "Secrets stay in your encrypted vault file — "
+                         "scrypt + AES-256-GCM, never uploaded.").pack(
+                anchor="w", pady=(14, 0))
+            dlg.add_button("Close")
+
+        def _set_theme_pref(self, choice):
+            pref = str(choice).lower()
+            if pref == "system":
+                guiconfig.set_theme("system")
+                self._follow_system = True
+                if getattr(self, "_sys_listener", None) is None:
+                    self._start_system_listener()
+                self.set_theme(aura._system_theme(), _system=True)
+            elif pref in ("light", "dark"):
+                self.set_theme(pref)     # persists via on_theme_change
 
         def _menu_open_vault(self):
             self.lock()
@@ -429,21 +493,15 @@ def build_app():
                 pass
             self._set_status("Unlocked", kind="ok")
 
-            # toolbar
-            tools = ctk.CTkFrame(self._vault_frame, fg_color="transparent")
-            tools.pack(fill="x")
-            aura.AuraButton(tools, "Add account", kind="primary",
-                            command=self._add_dialog).pack(side="left")
-
-            # search — placeholder needs NO textvariable (they're exclusive),
-            # so read as-you-type via <KeyRelease>.
-            sf = ctk.CTkFrame(self._vault_frame, fg_color="transparent")
-            sf.pack(fill="x", pady=(12, 8))
-            self._search_entry = aura.AuraEntry(sf, placeholder="Search accounts…")
+            # toolbar (layout language: primary left, search right)
+            tb = aura.Toolbar(self._vault_frame)
+            tb.pack(fill="x", pady=(0, 10))
+            tb.add_button("＋ Add account", self._add_dialog, kind="primary")
+            self._search_entry = tb.add_search(
+                "Search accounts…  (Ctrl+F)",
+                on_change=lambda _t: self._on_search(), width=260)
             if self._filter:
-                self._search_entry.insert(0, self._filter)
-            self._search_entry.pack(side="left", fill="x", expand=True)
-            self._search_entry.bind("<KeyRelease>", lambda _e: self._on_search())
+                self._search_entry.set(self._filter)
 
             # scrollable account list
             self._list = ctk.CTkScrollableFrame(self._vault_frame,
@@ -468,9 +526,22 @@ def build_app():
             except AuthKeeperError:
                 items = []
             if not items:
-                msg = ("No accounts yet — click “Add account”."
-                       if not self._filter else "No accounts match your search.")
-                aura.Caption(self._list, msg).pack(anchor="w", pady=20, padx=4)
+                if self._filter:
+                    aura.EmptyState(
+                        self._list, glyph="⚲", title="No matches",
+                        caption="No accounts match your search — try fewer "
+                                "letters.", height=220).pack(
+                        fill="x", pady=30)
+                else:
+                    aura.EmptyState(
+                        self._list, title="No accounts yet",
+                        caption="Add your first two-factor account — scan a "
+                                "QR image or paste the secret. Codes are "
+                                "generated offline.",
+                        action_text="＋ Add account", action=self._add_dialog,
+                        image=(asset_path("assets/vault-empty-light.png"),
+                               asset_path("assets/vault-empty-dark.png")),
+                        height=430).pack(fill="x", pady=10)
                 return
             for acc in items:
                 self._build_row(acc)

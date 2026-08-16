@@ -24,6 +24,7 @@ jobs:
           --add-data "auth-keeper.ico;."
           --collect-all cryptography
           --collect-all customtkinter
+          --add-data "assets;assets"
           --collect-submodules PIL
           auth_keeper_app.py
       - name: Stage installer inputs

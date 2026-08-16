@@ -1,0 +1,4 @@
+{
+  "tagline": "A 2FA/TOTP authenticator with an encrypted local vault — scan QR images, search accounts, ticking codes with copy-in-one-click, encrypted backups.",
+  "description": "Keep your two-factor codes yours. AuthKeeper 1.1 stores every account in a local vault encrypted with your master passphrase (scrypt + AES-256-GCM) — nothing is ever uploaded. Unlock to a clean, searchable account list where each entry shows its live 6-digit code, a countdown to the next rotation and one-click Copy; add accounts by scanning a QR image, pasting an otpauth:// URI or typing the secret. A toolbar with '+ Add account' (Ctrl+N) and instant search (Ctrl+F), keyboard shortcuts for lock (Ctrl+L) and Settings (Ctrl+,) with the System/Light/Dark theme choice — the app follows the OS Aura theme live by default. Take encrypted backups and restore them from the Backup section. Lock wipes the passphrase and vault from memory. Fully offline, open source, 100% AI-built."
+}

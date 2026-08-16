@@ -17,7 +17,7 @@ import os
 APP_DIRNAME = "AuthKeeper"
 CONFIG_NAME = "config.json"
 MAX_RECENT = 10
-VALID_THEMES = ("light", "dark")
+VALID_THEMES = ("system", "light", "dark")
 
 
 def config_dir():
@@ -33,7 +33,7 @@ def config_path():
 
 
 def _defaults():
-    return {"theme": "dark", "recent": []}
+    return {"theme": "system", "recent": []}
 
 
 def load():
@@ -59,7 +59,7 @@ def save(cfg):
     try:
         os.makedirs(config_dir(), exist_ok=True)
         clean = {
-            "theme": cfg.get("theme") if cfg.get("theme") in VALID_THEMES else "dark",
+            "theme": cfg.get("theme") if cfg.get("theme") in VALID_THEMES else "system",
             "recent": [p for p in cfg.get("recent", []) if isinstance(p, str)][:MAX_RECENT],
         }
         tmp = config_path() + ".tmp"
@@ -71,7 +71,7 @@ def save(cfg):
 
 
 def get_theme():
-    return load().get("theme", "dark")
+    return load().get("theme", "system")
 
 
 def set_theme(theme):
