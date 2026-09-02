@@ -1,6 +1,6 @@
 ; Inno Setup — AuthKeeper. Signed single-file installer, compiled in CI.
 #define AppName "AuthKeeper"
-#define AppVersion "1.1.0"
+#define AppVersion "1.1.1"
 
 [Setup]
 AppMutex=QuickOpen.AuthKeeper
@@ -42,7 +42,7 @@ WizardSmallImageFile=branding\wizard-small.bmp
 AppCopyright=Apache-2.0. 100%% AI-built, published on QuickOpen (quickopen.ai).
 VersionInfoCompany=QuickOpen
 VersionInfoProductName=AuthKeeper
-VersionInfoVersion=1.1.0.0
+VersionInfoVersion=1.1.1.0
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesInstallIn64BitMode=x64compatible

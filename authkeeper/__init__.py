@@ -18,7 +18,7 @@ from __future__ import annotations
 from . import crypto, otp, qr, vault
 from .errors import AuthKeeperError
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 __all__ = [
     "AuthKeeperError",
