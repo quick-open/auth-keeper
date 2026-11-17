@@ -1,5 +1,5 @@
 # AuthKeeper runtime deps — permissive/weak-copyleft only, no AGPL/proprietary.
-pyotp>=2.9
+pyotp>=2.9,<2.12  # 2.12 rejects secrets under 112 bits; real 16-char base32 secrets are 80 bits
 cryptography>=41
 segno>=1.6
 Pillow>=10.4
